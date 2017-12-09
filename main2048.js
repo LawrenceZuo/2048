@@ -151,3 +151,36 @@ function moveLeft() {
 	setTimeout("updateBoardView()", 200);
 	return true;
 }
+
+function moveRight() {
+	
+	if(!canMoveRight(board)){
+		return false;
+	}
+	//moveRight
+	for(var i=0; i<4; i++){
+		for(var j=2; j>=0; j--){
+			if(board[i][j] != 0){
+				for(var k=3; k>j; k--){
+					if(board[i][k] == 0 && noBlockHorizontal(i, j, k, board)){		//注意参数k，j的位置
+						//move
+						showMoveAnimation(i, j, i, k);
+						board[i][k] = board[i][j];
+						board[i][j] = 0;
+						continue;
+					}
+					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, j, k, board)){
+						//move
+						showMoveAnimation(i, j, i, k);
+						//add
+						board[i][k] += board[i][j];
+						board[i][j] = 0;
+						continue;
+					}
+				}
+			}
+		}
+	}
+	setTimeout("updateBoardView()", 200);
+	return true;
+}
