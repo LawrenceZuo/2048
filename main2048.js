@@ -30,6 +30,8 @@ function init(){
 	}
 
 	updateBoardView();
+
+	score = 0;
 }
 
 function updateBoardView(){
@@ -88,26 +90,26 @@ $(document).keydown(function(event){
 	switch(event.keyCode){
 		case 37:    //left
 			if(moveLeft()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 38:    //up
 			if(moveUp()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 39:    //right
 			if(moveRight()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 40:    //down
 			if(moveDown()){
-				generateOneNumber();
-				isgameover();
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
 			}
 			break;
 		default:    //default
@@ -116,7 +118,13 @@ $(document).keydown(function(event){
 });
 
 function isgameover(){
+	if( nospace(board)&&noMove(board)){
+		gameover();
+	}
+}
 
+function gameover(){
+	alert('gameover!');
 }
 
 function moveLeft() {
@@ -142,6 +150,9 @@ function moveLeft() {
 						//add
 						board[i][k] += board[i][j];
 						board[i][j] = 0;
+						//add score
+						score += board[i][k];
+						updateScore(score);
 						continue;
 					}
 				}
@@ -151,6 +162,7 @@ function moveLeft() {
 	setTimeout("updateBoardView()", 200);
 	return true;
 }
+
 
 function moveRight() {
 	
@@ -175,6 +187,81 @@ function moveRight() {
 						//add
 						board[i][k] += board[i][j];
 						board[i][j] = 0;
+						//add score
+						score += board[i][k];
+						updateScore(score);
+						continue;
+					}
+				}
+			}
+		}
+	}
+	setTimeout("updateBoardView()", 200);
+	return true;
+}
+
+function moveUp() {
+	
+	if(!canMoveUp(board)){
+		return false;
+	}
+	//moveUp
+	for(var i=0; i<4; i++){
+		for(var j=0; j<4; j++){
+			if(board[i][j] != 0){
+				for(var k=0; k<i; k++){
+					if(board[k][j] == 0 && noBlockVertical(i, k, j, board)){
+						//move
+						showMoveAnimation(i, j, k, j);
+						board[k][j] = board[i][j];
+						board[i][j] = 0;
+						continue;
+					}
+					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board)){
+						//move
+						showMoveAnimation(i, j, k, j);
+						//add
+						board[k][j] += board[i][j];
+						board[i][j] = 0;
+						//add score
+						score += board[i][k];
+						updateScore(score);
+						continue;
+					}
+				}
+			}
+		}
+	}
+	setTimeout("updateBoardView()", 200);
+	return true;
+}
+
+function moveDown() {
+	
+	if(!canMoveDown(board)){
+		return false;
+	}
+	//moveDown
+	for(var i=3; i>=0; i--){
+		for(var j=0; j<4; j++){
+			if(board[i][j] != 0){
+				for(var k=3; k>i; k--){
+					if(board[k][j] == 0 && noBlockVertical(i, k, j, board)){		//注意参数k，j的位置
+						//move
+						showMoveAnimation(i, j, k, j);
+						board[k][j] = board[i][j];
+						board[i][j] = 0;
+						continue;
+					}
+					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board)){
+						//move
+						showMoveAnimation(i, j, k, j);
+						//add
+						board[k][j] += board[i][j];
+						board[i][j] = 0;
+						//add score
+						score += board[i][k];
+						updateScore(score);
 						continue;
 					}
 				}
