@@ -1,9 +1,26 @@
 var board = new Array();
 var score = 0;
+var hasConflicted = new Array();
 
 $(document).ready(function(){
 	newgame();
 });
+
+$(document).ready(dunction(){
+	prepareForMobile();
+	newgame();
+});
+
+function prepareForMobile(){
+	$('#grid-container').css('width', gridContainerWidth - 2 * cellSpace);
+	$('#grid-container').css('height', gridContainerWidth - 2 * cellSpace);
+	$('#grid-container').css('padding', cellSpace);
+	$('#frid-container').css('border-radius', 0.02 * gridContainerWidth);
+
+	$('.grid-cell').css('width', cellSideLength);
+	$('.grid-cell').css('height', cellSideLength);
+	$('.grid-cell').css('border-radius', 0.02 * cellSideLength);
+}
 
 function newgame(){
 	//初始化棋盘格
@@ -24,8 +41,10 @@ function init(){
 
 	for (var i=0; i<4; i++) {
 		board[i] = new Array();
+		hasConflicted[i] = new Array();
 		for (var j=0; j<4; j++){
 			board[i][j] = 0;
+			hasConflicted[i][j] = false;
 		}
 	}
 
@@ -44,20 +63,23 @@ function updateBoardView(){
 			if (board[i][j] == 0) {
 				theNumberCell.css('width','0px');
 				theNumberCell.css('height','0px');
-				theNumberCell.css('top',getPosTop(i,j)+50);
-				theNumberCell.css('left',getPosLeft(i,j)+50);
+				theNumberCell.css('top',getPosTop(i,j) + cellSideLength / 2);
+				theNumberCell.css('left',getPosLeft(i,j) + cellSideLength / 2);
 			}
 			else{
-				theNumberCell.css('width','100px');
-				theNumberCell.css('height','100px');
+				theNumberCell.css('width', cellSideLength);
+				theNumberCell.css('height', cellSideLength);
 				theNumberCell.css('top',getPosTop(i,j));
 				theNumberCell.css('left',getPosLeft(i,j));
 				theNumberCell.css('background-color',getNumberBackgroundColor(board[i][j]));
 				theNumberCell.css('color',getNumberColor(board[i][j]));
 				theNumberCell.text(board[i][j]);
 			}
+			hasConflicted[i][j] = false;
 		}
 	}
+	$('.number-cell').css('line-height', cellSideLength + 'px');
+	$('.number-cell').css('font-size', 0.6 * cellSideLength + 'px');
 }
 
 function generateOneNumber(){
@@ -68,12 +90,25 @@ function generateOneNumber(){
 	//随机一个位置
 	var randx = parseInt(Math.floor(Math.random()*4));
 	var randy = parseInt(Math.floor(Math.random()*4));
-	while(true){
+
+	var times = 0;
+	while(times < 50){
 		if (board[randx][randy] == 0) {
 			break;
 		}
 		randx = parseInt(Math.floor(Math.random()*4));
 		randy = parseInt(Math.floor(Math.random()*4));
+		times++;
+	}
+	if(times == 50){
+		for(var i = 0; i < 4; i++){
+			for(var j = 0; j < 4; j++){
+				if(board[i][j] == 0){
+					randx = i;
+					randy = j;
+				}
+			}
+		}
 	}
 
 	//随机一个数字
@@ -144,7 +179,7 @@ function moveLeft() {
 						board[i][j] = 0;
 						continue;
 					}
-					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, k, j, board)){
+					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, k, j, board) && !hasConflicted[i][k]){
 						//move
 						showMoveAnimation(i, j, i, k);
 						//add
@@ -153,6 +188,7 @@ function moveLeft() {
 						//add score
 						score += board[i][k];
 						updateScore(score);
+						hasConflicted[i][k] = true;
 						continue;
 					}
 				}
@@ -181,7 +217,7 @@ function moveRight() {
 						board[i][j] = 0;
 						continue;
 					}
-					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, j, k, board)){
+					else if(board[i][k] == board[i][j] && noBlockHorizontal(i, j, k, board) && !hasConflicted[i][k]){
 						//move
 						showMoveAnimation(i, j, i, k);
 						//add
@@ -190,6 +226,7 @@ function moveRight() {
 						//add score
 						score += board[i][k];
 						updateScore(score);
+						hasConflicted[i][k] = true;
 						continue;
 					}
 				}
@@ -217,15 +254,16 @@ function moveUp() {
 						board[i][j] = 0;
 						continue;
 					}
-					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board)){
+					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board) && !hasConflicted[k][j]){
 						//move
 						showMoveAnimation(i, j, k, j);
 						//add
 						board[k][j] += board[i][j];
 						board[i][j] = 0;
 						//add score
-						score += board[i][k];
+						score += board[k][j];
 						updateScore(score);
+						hasConflicted[k][j] = true;
 						continue;
 					}
 				}
@@ -253,15 +291,16 @@ function moveDown() {
 						board[i][j] = 0;
 						continue;
 					}
-					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board)){
+					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board) && !hasConflicted[k][j]){
 						//move
 						showMoveAnimation(i, j, k, j);
 						//add
 						board[k][j] += board[i][j];
 						board[i][j] = 0;
 						//add score
-						score += board[i][k];
+						score += board[k][j];
 						updateScore(score);
+						hasConflicted[k][j] = true;
 						continue;
 					}
 				}
