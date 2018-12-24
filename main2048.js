@@ -2,20 +2,31 @@ var board = new Array();
 var score = 0;
 var hasConflicted = new Array();
 
+var startx = 0;
+var starty = 0;
+var endx = 0;
+var endy = 0;
+
 $(document).ready(function(){
 	newgame();
 });
 
-$(document).ready(dunction(){
+$(document).ready(function(){
 	prepareForMobile();
 	newgame();
 });
 
 function prepareForMobile(){
+	if (documentWidth > 540) {
+		gridContainerWidth = 500;
+		cellSpace = 20;
+		cellSideLength = 100;
+	}
+
 	$('#grid-container').css('width', gridContainerWidth - 2 * cellSpace);
 	$('#grid-container').css('height', gridContainerWidth - 2 * cellSpace);
 	$('#grid-container').css('padding', cellSpace);
-	$('#frid-container').css('border-radius', 0.02 * gridContainerWidth);
+	$('#grid-container').css('border-radius', 0.02 * gridContainerWidth);
 
 	$('.grid-cell').css('width', cellSideLength);
 	$('.grid-cell').css('height', cellSideLength);
@@ -124,24 +135,28 @@ function generateOneNumber(){
 $(document).keydown(function(event){
 	switch(event.keyCode){
 		case 37:    //left
+			event.preventDefault();
 			if(moveLeft()){
 				setTimeout("generateOneNumber()", 210);
 				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 38:    //up
+			event.preventDefault();
 			if(moveUp()){
 				setTimeout("generateOneNumber()", 210);
 				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 39:    //right
+			event.preventDefault();
 			if(moveRight()){
 				setTimeout("generateOneNumber()", 210);
 				setTimeout("isgameover()", 300);
 			}
 			break;
 		case 40:    //down
+			event.preventDefault();
 			if(moveDown()){
 				setTimeout("generateOneNumber()", 210);
 				setTimeout("isgameover()", 300);
@@ -149,6 +164,62 @@ $(document).keydown(function(event){
 			break;
 		default:    //default
 			break;
+	}
+});
+
+document.addEventListener('touchstart', function(event) {
+	startx = event.touches[0].pageX;
+	starty = event.touches[0].pageY;
+});
+
+document.addEventListener('touchmove', function(event) {
+	event.preventDefault();
+});
+
+document.addEventListener('touchend', function(event) {
+	endx = event.changedTouches[0].pageX;
+	endy = event.changedTouches[0].pageY;
+
+	var deltax = endx - startx;
+	var deltay = endy - starty;
+
+	if (Math.abs(deltax) < 0.3 * documentWidth && Math.abs(deltay) < 0.3 * documentWidth) {
+		return;
+	}
+
+	//x
+	if (Math.abs(deltax) >= Math.abs(deltay)) {
+		if (deltax > 0) {
+			//move right
+			if (moveRight()) {
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
+			}
+		}
+		else{
+			//move left
+			if (moveLeft()) {
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
+			}
+		}
+	}
+	//y
+	else{
+		if (deltay > 0) {
+			//move down
+			if (moveDown()) {
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300);
+			}
+		}
+		else{
+			//move up
+			if (moveUp()) {
+				setTimeout("generateOneNumber()", 210);
+				setTimeout("isgameover()", 300)
+			}
+		}
 	}
 });
 
@@ -247,14 +318,14 @@ function moveUp() {
 		for(var j=0; j<4; j++){
 			if(board[i][j] != 0){
 				for(var k=0; k<i; k++){
-					if(board[k][j] == 0 && noBlockVertical(i, k, j, board)){
+					if(board[k][j] == 0 && noBlockVertical(k, i, j, board)){
 						//move
 						showMoveAnimation(i, j, k, j);
 						board[k][j] = board[i][j];
 						board[i][j] = 0;
 						continue;
 					}
-					else if(board[k][j] == board[i][j] && noBlockVertical(i, k, j, board) && !hasConflicted[k][j]){
+					else if(board[k][j] == board[i][j] && noBlockVertical(k, i, j, board) && !hasConflicted[k][j]){
 						//move
 						showMoveAnimation(i, j, k, j);
 						//add
